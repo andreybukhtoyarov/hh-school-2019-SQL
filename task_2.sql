@@ -155,3 +155,7 @@ FROM
   (SELECT ROW_NUMBER() OVER () AS rn, now()-(random() * 365 * 24 * 3600 * 5) * '1 second'::interval AS response_time
    FROM generate_series(1, 50000) AS g(i)) AS T
   USING(rn) WHERE vac_id IN (SELECT vacancy_id FROM vacancy) AND res_id IN (SELECT resume_id FROM resume);
+
+-- Delete invalid records
+DELETE FROM response AS resp WHERE response_time <=
+                                   (SELECT creation_time FROM vacancy AS vac WHERE vac.vacancy_id = resp.vacancy_id);
