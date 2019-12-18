@@ -1,4 +1,4 @@
-INSERT INTO public.vacancy_body(
+INSERT INTO vacancy_body(
   company_name, name, text, area_id, address_id, work_experience,
   compensation_from, compensation_to, test_solution_required,
   work_schedule_type, employment_type, compensation_gross, driver_license_types
@@ -61,7 +61,7 @@ FROM generate_series(1, (SELECT count(vacancy_body_id) FROM vacancy_body)) AS g(
 -- Delete invalid records
 DELETE FROM vacancy WHERE expire_time <= creation_time;
 
-INSERT INTO specializations (name, description)
+INSERT INTO specialization (name, description)
 SELECT
   (SELECT ALL string_agg(
                   substr(
@@ -82,6 +82,14 @@ FROM generate_series(1, 1000) AS g(i);
 INSERT INTO vacancy_body_specialization (vacancy_body_id, specialization_id)
 SELECT
   (SELECT vacancy_body_id FROM vacancy_body WHERE vacancy_body_id = i) AS vacancy_body_id,
+  (SELECT ((random() * 700)::int  + i % 2 + 1)::integer)
+FROM generate_series(1, (SELECT count(vacancy_body_id) FROM vacancy_body)) AS g(i);
+
+INSERT INTO vacancy_body_specialization (vacancy_body_id, specialization_id)
+SELECT
+  (SELECT (
+    (random() * ((SELECT count(vacancy_body_id) FROM vacancy_body) - (random() * 1000)::int  + i % 2 + 1)::integer
+    )::int  + i % 2 + 1)::integer) AS vacancy_body_id,
   (SELECT ((random() * 700)::int  + i % 2 + 1)::integer)
 FROM generate_series(1, (SELECT count(vacancy_body_id) FROM vacancy_body)) AS g(i);
 
@@ -141,6 +149,14 @@ FROM generate_series(1, 100000) AS g(i);
 INSERT INTO resume_body_specialization (resume_body_id, specialization_id)
 SELECT
   (SELECT resume_body_id FROM resume_body WHERE resume_body_id = i) AS resume_body_id,
+  (SELECT ((random() * 700)::int  + i % 2 + 1)::integer)
+FROM generate_series(1, (SELECT count(resume_body_id) FROM resume_body)) AS g(i);
+
+INSERT INTO resume_body_specialization (resume_body_id, specialization_id)
+SELECT
+  (SELECT (
+    (random() * ((SELECT count(resume_body_id) FROM resume_body) - (random() * 1000)::int  + i % 2 + 1)::integer
+  )::int  + i % 2 + 1)::integer) AS resume_body_id,
   (SELECT ((random() * 700)::int  + i % 2 + 1)::integer)
 FROM generate_series(1, (SELECT count(resume_body_id) FROM resume_body)) AS g(i);
 

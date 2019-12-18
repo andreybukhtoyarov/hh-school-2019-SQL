@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS vacancy (
     FOREIGN KEY(vacancy_body_id) REFERENCES vacancy_body(vacancy_body_id)
 );
 
-CREATE TABLE IF NOT EXISTS specializations (
+CREATE TABLE IF NOT EXISTS specialization (
   specialization_id serial PRIMARY KEY,
   name varchar(150) DEFAULT ''::varchar NOT NULL,
   description varchar(220) DEFAULT ''::varchar NOT NULL
