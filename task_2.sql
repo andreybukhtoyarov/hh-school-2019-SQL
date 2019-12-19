@@ -173,5 +173,7 @@ FROM
   USING(rn) WHERE vac_id IN (SELECT vacancy_id FROM vacancy) AND res_id IN (SELECT resume_id FROM resume);
 
 -- Delete invalid records
-DELETE FROM response AS resp WHERE response_time <=
-                                   (SELECT creation_time FROM vacancy AS vac WHERE vac.vacancy_id = resp.vacancy_id);
+DELETE FROM response AS resp WHERE
+  response_time <= (SELECT creation_time FROM vacancy AS vac WHERE vac.vacancy_id = resp.vacancy_id)
+  OR
+  (SELECT active FROM resume WHERE resume_id = resp.resume_id) = false;

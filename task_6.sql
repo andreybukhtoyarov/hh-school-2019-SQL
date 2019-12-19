@@ -4,8 +4,8 @@ SELECT res_id, array_agg(arr), spec FROM
       (SELECT res_id, arr, vac_id, vac.vacancy_body_id AS v_b_id FROM
         (SELECT res_id, arr, resp.vacancy_id AS vac_id FROM
           (SELECT resume_id AS res_id, rbs.specialization_id AS arr FROM resume
-              JOIN resume_body_specialization AS rbs ON resume.resume_body_id = rbs.resume_body_id
-           GROUP BY resume_id, arr) AS first
+              JOIN resume_body_specialization AS rbs ON resume.active = true AND resume.resume_body_id = rbs.resume_body_id
+           ) AS first
             JOIN response AS resp ON first.res_id = resp.resume_id
          GROUP BY res_id, arr, vac_id) AS second
           JOIN vacancy AS vac ON vac_id = vac.vacancy_id
