@@ -88,8 +88,8 @@ FROM generate_series(1, (SELECT count(vacancy_body_id) FROM vacancy_body)) AS g(
 INSERT INTO vacancy_body_specialization (vacancy_body_id, specialization_id)
 SELECT
   (SELECT (
-    (random() * ((SELECT count(vacancy_body_id) FROM vacancy_body) - (random() * 1000)::int  + i % 2 + 1)::integer
-    )::int  + i % 2 + 1)::integer) AS vacancy_body_id,
+              (random() * ((SELECT count(vacancy_body_id) FROM vacancy_body) - (random() * 1000)::int  + i % 2 + 1)::integer
+                )::int  + i % 2 + 1)::integer) AS vacancy_body_id,
   (SELECT ((random() * 700)::int  + i % 2 + 1)::integer)
 FROM generate_series(1, (SELECT count(vacancy_body_id) FROM vacancy_body)) AS g(i);
 
@@ -155,30 +155,30 @@ FROM generate_series(1, (SELECT count(resume_body_id) FROM resume_body)) AS g(i)
 INSERT INTO resume_body_specialization (resume_body_id, specialization_id)
 SELECT
   (SELECT (
-    (random() * ((SELECT count(resume_body_id) FROM resume_body) - (random() * 1000)::int  + i % 2 + 1)::integer
-  )::int  + i % 2 + 1)::integer) AS resume_body_id,
+              (random() * ((SELECT count(resume_body_id) FROM resume_body) - (random() * 1000)::int  + i % 2 + 1)::integer
+                )::int  + i % 2 + 1)::integer) AS resume_body_id,
   (SELECT ((random() * 700)::int  + i % 2 + 1)::integer)
 FROM generate_series(1, (SELECT count(resume_body_id) FROM resume_body)) AS g(i);
 
-INSERT INTO response (vacancy_id, resume_id, last_change_time, response_time)
-SELECT vac_id, res_id, last_change_time, response_time
+INSERT INTO response (vacancy_id, resume_id, creation_time, response_time)
+SELECT vac_id, res_id, (
+  CASE
+    WHEN true
+      then (SELECT creation_time FROM resume WHERE res_id = resume.resume_id)
+    END), response_time
 FROM
   (SELECT ROW_NUMBER() OVER () AS rn, (random() * 10000 + i % 2 + 1)::int AS vac_id FROM generate_series(1, 50000) AS g(i)) AS QV
     JOIN
   (SELECT ROW_NUMBER() OVER () AS rn, (random() * 90000 + i % 2 + 1)::int AS res_id FROM generate_series(1, 50000) AS g(i)) AS QR
   USING(rn)
     JOIN
-  (SELECT ROW_NUMBER() OVER () AS rn, last_change_time FROM resume) AS QG
-  USING(rn)
-JOIN
   (SELECT ROW_NUMBER() OVER () AS rn, now()-(random() * 365 * 24 * 3600 * 5) * '1 second'::interval AS response_time
    FROM generate_series(1, 50000) AS g(i)) AS T
   USING(rn) WHERE vac_id IN (SELECT vacancy_id FROM vacancy)
-              AND res_id IN (SELECT resume_id FROM resume)
-              AND last_change_time IN (SELECT last_change_time FROM resume);
+              AND res_id IN (SELECT resume_id FROM resume);
 
 -- Delete invalid records
 DELETE FROM response AS resp WHERE
-  response_time <= (SELECT creation_time FROM vacancy AS vac WHERE vac.vacancy_id = resp.vacancy_id)
-  OR
-  (SELECT active FROM resume WHERE resume_id = resp.resume_id) = false;
+    response_time <= (SELECT creation_time FROM vacancy AS vac WHERE vac.vacancy_id = resp.vacancy_id)
+                                OR
+    (SELECT active FROM resume WHERE resume_id = resp.resume_id) = false;

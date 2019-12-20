@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS resume (
   active boolean DEFAULT true NOT NULL,
   last_change_time timestamp DEFAULT now(),
   FOREIGN KEY(resume_body_id) REFERENCES resume_body(resume_body_id),
-  PRIMARY KEY(resume_id, last_change_time)
+  PRIMARY KEY(resume_id, creation_time)
 );
 
 CREATE TABLE IF NOT EXISTS resume_body_specialization (
@@ -76,8 +76,8 @@ CREATE TABLE IF NOT EXISTS resume_body_specialization (
 CREATE TABLE IF NOT EXISTS response (
   vacancy_id integer DEFAULT 0 NOT NULL,
   resume_id integer DEFAULT 0 NOT NULL,
-  last_change_time  timestamp,
+  creation_time  timestamp,
   response_time timestamp NOT NULL,
   FOREIGN KEY(vacancy_id) REFERENCES vacancy(vacancy_id),
-  FOREIGN KEY(resume_id, last_change_time) REFERENCES resume(resume_id, last_change_time)
+  FOREIGN KEY(resume_id, creation_time) REFERENCES resume(resume_id, creation_time)
 );
