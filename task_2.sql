@@ -160,17 +160,22 @@ SELECT
   (SELECT ((random() * 700)::int  + i % 2 + 1)::integer)
 FROM generate_series(1, (SELECT count(resume_body_id) FROM resume_body)) AS g(i);
 
-INSERT INTO response (vacancy_id, resume_id, response_time)
-SELECT vac_id, res_id, response_time
+INSERT INTO response (vacancy_id, resume_id, last_change_time, response_time)
+SELECT vac_id, res_id, last_change_time, response_time
 FROM
   (SELECT ROW_NUMBER() OVER () AS rn, (random() * 10000 + i % 2 + 1)::int AS vac_id FROM generate_series(1, 50000) AS g(i)) AS QV
     JOIN
   (SELECT ROW_NUMBER() OVER () AS rn, (random() * 90000 + i % 2 + 1)::int AS res_id FROM generate_series(1, 50000) AS g(i)) AS QR
   USING(rn)
     JOIN
+  (SELECT ROW_NUMBER() OVER () AS rn, last_change_time FROM resume) AS QG
+  USING(rn)
+JOIN
   (SELECT ROW_NUMBER() OVER () AS rn, now()-(random() * 365 * 24 * 3600 * 5) * '1 second'::interval AS response_time
    FROM generate_series(1, 50000) AS g(i)) AS T
-  USING(rn) WHERE vac_id IN (SELECT vacancy_id FROM vacancy) AND res_id IN (SELECT resume_id FROM resume);
+  USING(rn) WHERE vac_id IN (SELECT vacancy_id FROM vacancy)
+              AND res_id IN (SELECT resume_id FROM resume)
+              AND last_change_time IN (SELECT last_change_time FROM resume);
 
 -- Delete invalid records
 DELETE FROM response AS resp WHERE
