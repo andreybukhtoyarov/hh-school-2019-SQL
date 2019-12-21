@@ -14,7 +14,9 @@ WITH res_id_res_spec_arr AS (
   JOIN vacancy_body_specialization AS vac_body_spec ON vac_body_spec.vacancy_body_id = vac_body_id
    GROUP BY res_id, res_spec_arr, spec
 ), max_count AS (
-  SELECT res_id, res_spec_arr, max(count) AS max, spec FROM count_vac_body_spec
-  GROUP BY res_id, res_spec_arr, spec
+  SELECT res_id, res_spec_arr, max(count) AS max FROM count_vac_body_spec
+  GROUP BY res_id, res_spec_arr
 )
-SELECT res_id, res_spec_arr, max, spec FROM max_count GROUP BY res_id, res_spec_arr, max, spec ORDER BY res_id;
+SELECT DISTINCT ON (max_count.res_id) max_count.res_id, max_count.res_spec_arr, count_vac_body_spec.spec FROM max_count
+JOIN count_vac_body_spec ON max_count.res_id = count_vac_body_spec.res_id AND max = count_vac_body_spec.count
+GROUP BY max_count.res_id, max_count.res_spec_arr, count_vac_body_spec.spec ORDER BY res_id;
